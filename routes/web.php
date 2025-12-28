@@ -1,5 +1,4 @@
 <?php
-//test
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
