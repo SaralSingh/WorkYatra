@@ -95,7 +95,7 @@ class AccountController extends Controller
         );
 
         $user = Auth::user();
-        if(!$user) abort(401);
+        if (!$user) abort(401);
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->designation = $validated['designation'] ?? null;
@@ -114,13 +114,13 @@ class AccountController extends Controller
 
     public function ProfilePicUpdate(Request $request)
     {
-        $user = Auth::user();
         $request->validate(
             [
                 'avatar' => 'required|image'
             ]
         );
 
+        $user = Auth::user();
         $oldAvatar = $user->avatar;
 
         $image = $request->file('avatar');
