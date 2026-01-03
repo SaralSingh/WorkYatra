@@ -163,10 +163,7 @@ document.getElementById('profilePicForm').addEventListener('submit', function (e
             showFieldErrors(data.errors);
             return;
         }
-        
-        window.location.href = '{{url()->current()}}'
-        // optional but professional
-        form.reset();
+        window.location.reload();
     })
     .catch(error => {
         console.error(error);

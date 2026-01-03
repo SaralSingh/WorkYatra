@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AccountController extends Controller
 {
@@ -93,7 +94,8 @@ class AccountController extends Controller
             ]
         );
 
-        $user = User::find(Auth::id());
+        $user = Auth::user();
+        if(!$user) abort(401);
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->designation = $validated['designation'] ?? null;
@@ -112,39 +114,46 @@ class AccountController extends Controller
 
     public function ProfilePicUpdate(Request $request)
     {
-        $uid = Auth::user()->id;
+        $user = Auth::user();
         $request->validate(
             [
                 'avatar' => 'required|image'
             ]
         );
 
+        $oldAvatar = $user->avatar;
+
         $image = $request->file('avatar');
         $ext = $image->getClientOriginalExtension();
-        $fileName = $uid . '_' . time() . '_' . uniqid() . '.' . $ext;
-       $image->storeAs('avatars',$fileName,'public');
+        $fileName = $user->id . '_' . time() . '_' . uniqid() . '.' . $ext;
+        $image->storeAs('avatars', $fileName, 'public');
 
-        $status = User::where('id', $uid)->update(
+        $status = User::where('id', $user->id)->update(
             [
                 'avatar' => $fileName
             ]
         );
 
-    session()->flash('success', 'Profile picture updated successfully');
         if ($status) {
-
+            if ($oldAvatar && Storage::disk('public')->exists('avatars/' . $oldAvatar)) {
+                Storage::disk('public')->delete('avatars/' . $oldAvatar);
+            }
+            session()->flash('success', 'Profile picture updated successfully');
             return response()->json(
                 [
                     'status' => true,
                     'message' => 'profile pic updated',
-                ],200
+                ],
+                200
             );
         } else {
+            Storage::disk('public')->delete('avatars/' . $fileName);
             return response()->json(
                 [
                     'status' => false,
                     'message' => 'Profile pic update failed',
-                ],500
+                ],
+                500
             );
         }
     }
