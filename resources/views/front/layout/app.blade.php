@@ -55,6 +55,7 @@
 		</div>
 	</nav>
 	@auth
+@include('front.message')
 <div class="collapse mt-3" id="accountMenu">
     <div class="card account-nav border-0 shadow mb-4 mb-lg-0">
         <div class="card-body p-0">
@@ -102,10 +103,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="profilePicForm">
             <div class="mb-3">
                 <label for="exampleInputEmail1" class="form-label">Profile Image</label>
-                <input type="file" class="form-control" id="image"  name="image">
+                <input type="file" class="form-control" id="avatar"  name="avatar">
+                <div class="text-danger small error-avatar"></div>
             </div>
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary mx-3">Update</button>
@@ -139,6 +141,60 @@
             }
         });
     });
+
+document.getElementById('profilePicForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    let form = this;
+    let formData = new FormData(form);
+
+    fetch('/account/profile-pic-update', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(async response => {
+        const data = await response.json();
+
+        if (!response.ok) {
+            showFieldErrors(data.errors);
+            return;
+        }
+        
+        window.location.href = '{{url()->current()}}'
+        // optional but professional
+        form.reset();
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Something went wrong');
+    });
+});
+
+
+function showFieldErrors(errors) {
+    for (let field in errors) {
+        const errorDiv = document.querySelector('.error-' + field);
+        if (errorDiv) {
+            errorDiv.innerText = errors[field][0];
+        }
+    }
+}
+
+document.querySelectorAll('#profilePicForm input')
+.forEach(input => {
+    input.addEventListener('change', function () {
+        const errorDiv = document.querySelector('.error-' + this.name);
+        if (errorDiv) {
+            errorDiv.innerText = '';
+        }
+    });
+});
+
+
 </script>
 
 </body>

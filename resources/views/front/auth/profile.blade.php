@@ -16,13 +16,14 @@
             <div class="col-lg-3">
                 <div class="card border-0 shadow mb-4 p-3">
                     <div class="s-body text-center mt-3">
-                        <img
-    src="{{ $user->avatar ? asset('storage/'.$user->avatar) : asset('assets/images/default-avatar.png') }}"
+<img
+    src="{{ $user->avatar ? asset('storage/avatars/'.$user->avatar) : asset('assets/images/default-avatar.png') }}"
     alt="avatar"
     class="rounded-circle img-fluid"
-    style="width: 150px;"
+    style="width:150px;"
 >
-                        <h5 class="mt-3 pb-0" >{{$user->name}}</h5>
+
+                        <h5 class="mt-3 pb-0" id="userName">{{$user->name}}</h5>
                         <p class="text-muted mb-1 fs-6" id="user_d">{{ $user->designation ?? 'Add your designation' }}</p>
                         <div class="d-flex justify-content-center mb-2">
                             <button data-bs-toggle="modal" data-bs-target="#exampleModal" type="button" class="btn btn-primary">Change Profile Picture</button>
@@ -32,6 +33,12 @@
                 
             </div>
             <div class="col-lg-9">
+<div id="successMessage" class="alert alert-success d-none" role="alert">
+    <span id="successText"></span>
+    <button type="button" class="btn-close float-end" onclick="hideSuccess()"></button>
+</div>
+
+
                 <div class="card border-0 shadow mb-4">
                     <form action="" id="formUpdateProfile" name="formUpdateProfile">
                     <div class="card-body  p-4">
@@ -118,14 +125,13 @@ document.getElementById('formUpdateProfile')
         }
 
         // ✅ SUCCESS
-
-        alert(data.message);
-
+        showSuccess(data.message);
         form.name.value        = data.user.name;
         form.email.value       = data.user.email;
         form.designation.value = data.user.designation ?? '';
         form.mobile.value      = data.user.mobile ?? '';
         document.getElementById('user_d').innerText = data.user.designation ?? 'Add your designation';
+        document.getElementById('userName').innerText = data.user.name;
     })
     .catch(error => console.error(error));
 });
@@ -148,6 +154,19 @@ document.querySelectorAll('#formUpdateProfile input')
         }
     });
 });
+
+function showSuccess(message) {
+    const box = document.getElementById('successMessage');
+    const text = document.getElementById('successText');
+
+    text.innerText = message;
+    box.classList.remove('d-none');
+}
+
+function hideSuccess() {
+    document.getElementById('successMessage').classList.add('d-none');
+}
+
 
 
 </script>

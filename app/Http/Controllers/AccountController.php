@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AccountController extends Controller
-{   
+{
     //this function will display register page
     public function registration()
     {
         return view('front.auth.register');
     }
-    
+
     //this function register the user and create account on database
     public function processRegistration(Request $request)
     {
@@ -22,17 +22,19 @@ class AccountController extends Controller
             [
                 'name' => 'required|string',
                 'email' => 'required|email|unique:users,email',
-                'password'=>'required|confirmed|min:6|max:20',
-            ]);
+                'password' => 'required|confirmed|min:6|max:20',
+            ]
+        );
 
-                User::create(
-                    [
-                        'name' => $validated['name'],
-                        'email' => $validated['email'],
-                        'password' => Hash::make($validated['password'])
-                    ]);
+        User::create(
+            [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password'])
+            ]
+        );
 
-                return redirect()->route('login.page')->with('success', 'Registration successful. Please login.');
+        return redirect()->route('login')->with('success', 'Registration successful. Please login.');
     }
 
     //this function will display login page
@@ -40,7 +42,7 @@ class AccountController extends Controller
     {
         return view('front.auth.login');
     }
-    
+
     //this function will work on authentication of user
     public function authenticate(Request $request)
     {
@@ -49,11 +51,10 @@ class AccountController extends Controller
             'password' => 'required|min:6|max:20'
         ]);
 
-        if(Auth::attempt($credentials))
-        {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->route('profile.page');
-        }else{
+        } else {
             return back()->withErrors([
                 'email' => 'Invalid email or password.',
             ])->withInput($request->only('email'));
@@ -62,8 +63,8 @@ class AccountController extends Controller
 
     public function profile()
     {
-            $user = Auth::user();
-            return view('front.auth.profile',compact('user'));
+        $user = Auth::user();
+        return view('front.auth.profile', compact('user'));
     }
 
     public function logout(Request $request)
@@ -78,7 +79,7 @@ class AccountController extends Controller
     public function postJob()
     {
         $user = Auth::user();
-        return view('front.auth.post-job',compact('user'));
+        return view('front.auth.post-job', compact('user'));
     }
 
     public function updateProfile(Request $request)
@@ -86,25 +87,65 @@ class AccountController extends Controller
         $validated = $request->validate(
             [
                 'name' => 'required|string|min:5|max:50',
-                'email' => 'required|email|unique:users,email,'.Auth::id().',id',
+                'email' => 'required|email|unique:users,email,' . Auth::id() . ',id',
                 'designation' => 'nullable|string|min:2|max:100',
                 'mobile' => 'nullable|digits:10',
-            ]);
+            ]
+        );
 
-            $user = User::find(Auth::id());
-            $user->name = $validated['name'];
-            $user->email = $validated['email'];
-            $user->designation = $validated['designation'] ?? null;
-            $user->mobile = $validated['mobile'] ?? null;
-            $user->save();
-            
+        $user = User::find(Auth::id());
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->designation = $validated['designation'] ?? null;
+        $user->mobile = $validated['mobile'] ?? null;
+        $user->save();
+
+        return response()->json(
+            [
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'user' => $user
+            ],
+            200
+        );
+    }
+
+    public function ProfilePicUpdate(Request $request)
+    {
+        $uid = Auth::user()->id;
+        $request->validate(
+            [
+                'avatar' => 'required|image'
+            ]
+        );
+
+        $image = $request->file('avatar');
+        $ext = $image->getClientOriginalExtension();
+        $fileName = $uid . '_' . time() . '_' . uniqid() . '.' . $ext;
+       $image->storeAs('avatars',$fileName,'public');
+
+        $status = User::where('id', $uid)->update(
+            [
+                'avatar' => $fileName
+            ]
+        );
+
+    session()->flash('success', 'Profile picture updated successfully');
+        if ($status) {
+
             return response()->json(
                 [
-                    'status'=>true,
-                    'message'=>'Profile updated successfully',
-                    'user'=>$user
-                ],200);
-
+                    'status' => true,
+                    'message' => 'profile pic updated',
+                ],200
+            );
+        } else {
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'Profile pic update failed',
+                ],500
+            );
+        }
     }
-    
 }

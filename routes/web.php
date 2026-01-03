@@ -20,6 +20,7 @@ Route::middleware('auth')->prefix('account')->group(function () {
     Route::get('post-job', [AccountController::class, 'postJob'])->name('post.job');
     Route::post('logout', [AccountController::class, 'logout'])->name('logout');
     Route::post('profile/update', [AccountController::class, 'updateProfile'])->name('update.profile');
+    Route::post('profile-pic-update',[AccountController::class,'ProfilePicUpdate']);
 });
 
 Route::get('account/profile/update', function () {
