@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+
 
 class AccountController extends Controller
 {
@@ -116,7 +119,7 @@ class AccountController extends Controller
     {
         $request->validate(
             [
-                'avatar' => 'required|image'
+                'avatar' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240'
             ]
         );
 
@@ -124,9 +127,11 @@ class AccountController extends Controller
         $oldAvatar = $user->avatar;
 
         $image = $request->file('avatar');
-        $ext = $image->getClientOriginalExtension();
-        $fileName = $user->id . '_' . time() . '_' . uniqid() . '.' . $ext;
-        $image->storeAs('avatars', $fileName, 'public');
+        $fileName = $user->id . '_' . time() . '_' . uniqid() . '.jpg';
+
+        $manager = new ImageManager(new Driver());
+        $processedImage = $manager->read($image)->cover(300, 300)->toJpeg(80);
+        Storage::disk('public')->put('/avatars/'.$fileName,$processedImage->toString());
 
         $status = User::where('id', $user->id)->update(
             [

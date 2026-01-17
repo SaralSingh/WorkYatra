@@ -26,3 +26,5 @@ Route::middleware('auth')->prefix('account')->group(function () {
 Route::get('account/profile/update', function () {
     return redirect()->route('profile.page');
 });
+
+Route::get('/dump',[HomeController::class,'dump']);

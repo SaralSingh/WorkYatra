@@ -18,10 +18,11 @@
                 <div class="card border-0 shadow mb-4 p-3">
                     <div class="s-body text-center mt-3">
 <img
-    src="{{ $user->avatar ? asset('storage/'.$user->avatar) : asset('assets/images/default-avatar.png') }}"
+    src="{{ $user->avatar ? asset('storage/avatars/'.$user->avatar) : asset('assets/images/default-avatar.png') }}"
     alt="avatar"
     class="rounded-circle img-fluid"
-    style="width: 150px;">
+    style="width:150px;"
+>
                         <h5 class="mt-3 pb-0">{{$user->name}}</h5>
                         <p class="text-muted mb-1 fs-6">{{ $user->designation ?? 'Add your designation' }}</p>
                     </div>
